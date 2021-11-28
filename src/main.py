@@ -9,6 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
+from todos import todos
 #from models import Person
 
 app = Flask(__name__)
@@ -38,6 +39,48 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+@app.route('/get-todos', methods=['GET'])
+def get_todos():
+    response_body = {
+        "msg": "Full list of To-Do's",
+        "todos": todos
+    }
+
+    return jsonify(response_body), 200
+
+# Use Postman or similar to add to-do
+@app.route('/post-todo', methods=['POST'])
+def post_todo():
+    done = request.json['done']
+    label = request.json['label']
+    new_todo = {
+        "done": done,
+        "label": label,
+    }
+    todos.append(new_todo)
+    response_body = {
+        "msg": "ToDo added successfully",
+        "todos": todos
+    }
+
+    return jsonify(response_body), 200
+
+# Use Postman or similar to remove to-do
+@app.route('/delete-todo/<int:position>', methods=['DELETE'])
+def delete_todo(position):
+    todo_found = todos[position]
+  
+    todos.remove(todo_found)
+    
+    response_body = {
+        "msg": "ToDo deleted successfully",
+        "todo_deleted": todo_found,
+        "todos": todos
+    }
+
+    return jsonify(response_body), 200
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
